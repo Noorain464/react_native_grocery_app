@@ -1,127 +1,113 @@
-
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  FlatList,
+} from "react-native";
 import React from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector, useDispatch } from "react-redux";
-// import { removeFromCart, updateQuantity } from "../../store/cartSlice";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { incrementQty, decrementQty, removeItem } from "../../store/cartSlice";
 
-const cart = () => {
-  const dispatch = useDispatch();
+const Cart = () => {
   const cartItems = useSelector((state: any) => state.cart.items);
+  const dispatch = useDispatch();
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total:any, item:any) => {
-      const price = parseFloat(item.price.replace("₹", ""));
-      return total + price * item.quantity; // 127+65*1
-    }, 0);
+  const getTotal = () => {
+    return cartItems
+      .reduce((sum: any, item: any) => {
+        const price = parseFloat(item.price);
+        return sum + price * item.quantity;
+      }, 0)
+      .toFixed(2);
   };
 
-  // const handleQuantityChange = (id: number, change: number) => {
-  //   const item = cartItems.find((item) => item.id === id);
-  //   if (item) {
-  //     const newQuantity = item.quantity + change;
-  //     dispatch(updateQuantity({ id, quantity: newQuantity }));
-  //   }
-  // };
-
-  if (cartItems.length === 0) {
-    return (
-      <SafeAreaView className="flex-1 bg-white">
-        <View style={styles.container}>
-          <Text style={styles.heading}>Cart</Text>
-          <Text style={styles.emptyText}>Your cart is empty</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1">
-        <View className="bg-emerald-600 px-4 py-4">
-          <Text className="text-white text-2xl font-bold">Cart</Text>
-          <Text className="text-white/80 text-sm">{cartItems.length} item(s)</Text>
+    <SafeAreaView className="flex-1 bg-white px-4 py-4">
+      <Text className="text-2xl font-bold text-gray-800 mb-4">My Cart</Text>
+
+      {cartItems.length === 0 ? (
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-lg text-gray-500">Your cart is empty 🛒</Text>
         </View>
+      ) : (
+        <>
+          {/* Cart List */}
+          <FlatList
+            data={cartItems}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <View className="bg-gray-50 rounded-xl p-4 mb-3 flex-row justify-between items-center border border-gray-200">
+                {/* LEFT */}
+                <View className="flex-row items-center gap-3">
+                  <View className="w-12 h-12 bg-white rounded-lg items-center justify-center">
+                    <Text className="text-3xl">{item.image}</Text>
+                  </View>
 
-        <FlatList
-          data={cartItems}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View className="bg-white border-b border-gray-200 px-4 py-4">
-              <View className="flex-row items-center">
-                <View className="w-16 h-16 bg-gray-100 rounded-lg items-center justify-center mr-4">
-                  <Text className="text-3xl">{item.image}</Text>
-                </View>
-                
-                <View className="flex-1">
-                  <Text className="text-base font-semibold text-gray-800">{item.name}</Text>
-                  <Text className="text-sm text-gray-500">{item.category}</Text>
-                  <Text className="text-lg font-bold text-emerald-600 mt-1">{item.price}</Text>
-                </View>
-
-                <View className="items-end">
-                  <TouchableOpacity
-                  
-                    className="mb-2"
-                  >
-                    <Text className="text-red-500 text-xs">Remove</Text>
-                  </TouchableOpacity>
-                  
-                  <View className="flex-row items-center border border-gray-300 rounded-lg">
-                    <TouchableOpacity
-                     
-                      className="px-3 py-1"
-                    >
-                      <Text className="text-gray-700 font-bold">-</Text>
-                    </TouchableOpacity>
-                    
-                    <Text className="px-4 py-1 text-gray-800 font-semibold">{item.quantity}</Text>
-                    
-                    <TouchableOpacity
-                     
-                      className="px-3 py-1"
-                    >
-                      <Text className="text-gray-700 font-bold">+</Text>
-                    </TouchableOpacity>
+                  <View>
+                    <Text className="text-gray-800 font-semibold text-base">
+                      {item.name}
+                    </Text>
+                    <Text className="text-emerald-600 font-bold text-sm">
+                      {item.price}
+                    </Text>
                   </View>
                 </View>
-              </View>
-            </View>
-          )}
-          className="flex-1"
-        />
 
-        <View className="bg-white border-t border-gray-200 px-4 py-4">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-semibold text-gray-800">Total:</Text>
-            <Text className="text-2xl font-bold text-emerald-600">₹ {calculateTotal()}</Text>
+                {/* RIGHT */}
+                <View className="flex-row items-center gap-2">
+                  <TouchableOpacity
+                    className="w-7 h-7 rounded-full bg-gray-200 items-center justify-center"
+                    onPress={() => dispatch(decrementQty(item.id))}
+                  >
+                    <Text className="text-lg font-bold">−</Text>
+                  </TouchableOpacity>
+
+                  <Text className="mx-4 text-gray-400">{item.quantity}</Text>
+                  <TouchableOpacity
+                    className="w-7 h-7 rounded-full bg-emerald-600 items-center justify-center"
+                    onPress={() => dispatch(incrementQty(item.id))}
+                  >
+                    <Text className="text-white text-lg font-bold">+</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => dispatch(removeItem(item.id))}
+                    className="ml-3"
+                  >
+                    <Text className="text-red-500 text-sm font-semibold">
+                      Remove
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          />
+
+          {/* TOTAL + CHECKOUT */}
+          <View className="bg-white p-4 border-t border-gray-200 mt-2">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-lg font-semibold text-gray-800">
+                Total
+              </Text>
+              <Text className="text-xl font-bold text-emerald-600">
+                ₹{getTotal()}
+              </Text>
+            </View>
+
+            <TouchableOpacity className="bg-emerald-600 py-4 rounded-xl items-center">
+              <Text className="text-white font-semibold text-lg">
+                Checkout
+              </Text>
+            </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity className="bg-emerald-600 rounded-xl py-4 items-center">
-            <Text className="text-white text-lg font-semibold">Proceed to Checkout</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };
 
-export default cart;
+export default Cart;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#1F2937",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#6B7280",
-    marginTop: 10,
-  },
-});
+const styles = StyleSheet.create({});

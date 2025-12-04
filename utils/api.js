@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Example: 'http://192.168.1.100:3000/api' (replace with your actual IP)
 // For iOS Simulator/Android Emulator, you can use 'http://localhost:3000/api'
 // To find your IP: On Mac/Linux run 'ifconfig', on Windows run 'ipconfig'
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://10.51.13.238:3000";
 
 // API Calls for Login Signup and getCurrentUser
 
@@ -21,10 +21,10 @@ export const getToken = async () => {
   }
 };
 
-export const saveToken = async(token) => {
+export const saveToken = async (token) => {
   try {
-      await AsyncStorage.setItem('authToken', token)
-      return token
+    await AsyncStorage.setItem('authToken', token)
+    return token
   } catch (error) {
     console.error("Token cannot be Saved")
     return null
@@ -76,11 +76,11 @@ const apiRequest = async (
     }
 
     const response = await fetch(url, config);
-    
+
     // Check if response is JSON
     const contentType = response.headers.get("content-type");
     let data;
-    
+
     try {
       if (contentType && contentType.includes("application/json")) {
         data = await response.json();
@@ -88,7 +88,7 @@ const apiRequest = async (
         // If not JSON, get text response (likely HTML error page)
         const text = await response.text();
         console.error("Non-JSON response received:", text.substring(0, 200));
-        
+
         if (!response.ok) {
           throw new Error(`Server error: ${response.status} ${response.statusText}. Please check if the server is running at ${url}`);
         }
@@ -145,3 +145,21 @@ export const authApi = {
   },
 };
 
+
+//API calls for products
+export const productApi = {
+  // Fetch all products
+  fetchProducts: async () => {
+    return apiRequest("/products", "GET");
+  },
+
+  // Fetch product by ID
+  fetchProductById: async (productId) => {
+    return apiRequest(`/products/${productId}`, "GET");
+  },
+  // Create a new product
+  createProduct: async (name,price,imageUrl,category,description,stock) => {
+    return apiRequest("/products", "POST", {name,price,imageUrl,category,description,stock}, true);
+  }
+
+};

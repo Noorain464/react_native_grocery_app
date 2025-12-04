@@ -1,29 +1,44 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
+  FlatList,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  TextInput,
-  FlatList,
-  Alert,
+  Image
 } from "react-native";
-import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { authApi } from "../../utils/api.js";
-import LocationPicker from "../../components/LocationPicker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
+import LocationPicker from "../../components/LocationPicker";
 import { addToCart } from "../../store/cartSlice";
+import { authApi, productApi } from "../../utils/api.js";
 
 
 
 const home = () => {
+  interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  imageUrl?: string;
+  category: string;
+  description?: string;
+  stock?: number;
+}
+
+
   const router = useRouter();
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
   const [locationName, setLocationName] = useState("Home");
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   // initialize dispatcher
   const dispatch = useDispatch()
@@ -69,27 +84,23 @@ const home = () => {
       },
     ]);
   };
-  // Minimal placeholder data (UI only)
-  const categories = [
-    { id: 1, name: "Fruits", icon: "🍎", color: "bg-red-100" },
-    { id: 2, name: "Vegetables", icon: "🥬", color: "bg-green-100" },
-    { id: 3, name: "Dairy", icon: "🥛", color: "bg-blue-100" },
-    { id: 4, name: "Electronics", icon: "🥛", color: "bg-blue-100" },
-    { id: 5, name: "Clothes", icon: "🥛", color: "bg-blue-100" },
-    { id: 6, name: "Snacks", icon: "🥛", color: "bg-blue-100" },
-  ];
 
-  const products = [
-    {
-      id: 1,
-      name: "Tomatoes",
-      price: "₹49",
-      image: "🍅",
-      category: "Vegetables",
-    },
-    { id: 2, name: "Bananas", price: "₹39", image: "🍌", category: "Fruits" },
-    { id: 3, name: "Milk", price: "₹65", image: "🥛", category: "Dairy" },
-  ];
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      setLoadingProducts(true);
+      const response = await productApi.fetchProducts();
+      setProducts(response); // Assuming your API returns a list
+    } catch (error) {
+      console.log("Product fetch error:", error);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -173,16 +184,16 @@ const home = () => {
             Categories
           </Text>
           <FlatList
-            data={categories}
+            data={products}
             horizontal
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <View className="items-center mr-4">
                 <View
-                  className={`w-16 h-16 rounded-full ${item.color} items-center justify-center mb-2`}
+                  className={`w-16 h-16 rounded-full items-center justify-center mb-2`}
                 >
-                  <Text className="text-3xl">{item.icon}</Text>
+                  <Text className="text-3xl">{item.imageUrl}</Text>
                 </View>
                 <Text className="text-xs font-medium text-gray-700">
                   {item.name}
@@ -192,7 +203,7 @@ const home = () => {
             scrollEnabled={true}
             nestedScrollEnabled={true}
           />
-        </View>
+        </View> 
 
         <View className="px-4 py-4">
           <View className="flex-row items-center justify-between mb-3">
@@ -206,18 +217,21 @@ const home = () => {
             </TouchableOpacity>
           </View>
 
-          <FlatList
+          <FlatList<Product>
             data={products}
             horizontal
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item._id}
             renderItem={({ item }) => (
               <View
                 className="bg-white rounded-xl p-3 mr-3 shadow-sm border border-gray-100"
                 style={{ width: 150 }}
               >
                 <View className="w-full h-24 bg-gray-50 rounded-lg items-center justify-center mb-2">
-                  <Text className="text-5xl">{item.image}</Text>
+                  <Image
+                    source={{ uri: item.imageUrl }}
+                    className="w-full h-24 rounded-lg"
+                  />
                 </View>
 
                 <Text
@@ -230,18 +244,18 @@ const home = () => {
 
                 <View className="flex-row items-center justify-between mt-2">
                   <Text className="text-lg font-bold text-emerald-600">
-                    {item.price}
+                    ${item.price}
                   </Text>
                   <TouchableOpacity className="bg-emerald-600 px-3 py-1 rounded-lg"
-                  onPress={()=>{
-                    dispatch(addToCart({
-                      id:item.id,
-                      name:item.name,
-                      image: item.image,
-                      category: item.category,
-                      price : item.price
-                    }))
-                  }}>
+                    onPress={() => {
+                      dispatch(addToCart({
+                        id: item._id,
+                        name: item.name,
+                        image: item.imageUrl,
+                        category: item.category,
+                        price: item.price
+                      }))
+                    }}>
                     <Text className="text-white text-xs font-semibold">
                       Add
                     </Text>
