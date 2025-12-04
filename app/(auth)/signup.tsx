@@ -44,31 +44,32 @@ export default function SignupScreenUI() {
 
     try {
       const response = await authApi.signup(name.trim(), email.trim(), password);
-
+      console.log('Signup response:', response);
+      
       if (response && response.success && response.data?.token) {
         // Save token
         await saveToken(response.data.token);
-
+        console.log('Token saved successfully');
+        
         // Show success message
         Alert.alert('Success', 'Account created successfully!', [
           {
             text: 'OK',
             onPress: () => {
-              // Navigate to home or login screen
+              // Navigate to home screen
               router.replace('/(main)/home');
             }
           }
         ]);
       } else {
-        const msg = (response && (response.message || response.error)) || 'Sign up failed. Please try again.';
-        setError(String(msg));
-        console.log('Signup response (failure):', response);
-        Alert.alert('Signup failed', String(msg));
+        const errorMsg = response?.message || 'Sign up failed. Please try again.';
+        setError(errorMsg);
+        console.log('Signup failed:', errorMsg);
       }
-    } catch (err) {
-      console.error("Error on Sign up:", err);
-      const errMsg = err && (err as any).message ? (err as any).message : String(err);
-      Alert.alert('Signup error', errMsg);
+    } catch (error: any) {
+      console.error("Error on Sign up:", error);
+      const errorMessage = error?.message || error?.toString() || 'An error occurred. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -205,7 +206,7 @@ export default function SignupScreenUI() {
               <TouchableOpacity 
                 style={styles.linkButton}
                 className="mt-6 items-center"
-                // No onPress – purely presentational
+                onPress={() => router.push('/(auth)/login')}
                 activeOpacity={0.8}
               >
                 <Text style={styles.linkText} className="text-emerald-700">
