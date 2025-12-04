@@ -50,7 +50,7 @@ const Cart = () => {
                       {item.name}
                     </Text>
                     <Text className="text-emerald-600 font-bold text-sm">
-                      {item.price}
+                      ₹{item.price}
                     </Text>
                   </View>
                 </View>

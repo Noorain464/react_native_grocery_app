@@ -17,19 +17,12 @@ import { useDispatch } from "react-redux";
 import LocationPicker from "../../components/LocationPicker";
 import { addToCart } from "../../store/cartSlice";
 import { authApi, productApi } from "../../utils/api.js";
+import { Product } from "@/utils/constants";
 
 
 
 const home = () => {
-  interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  imageUrl?: string;
-  category: string;
-  description?: string;
-  stock?: number;
-}
+  
 
 
   const router = useRouter();
@@ -203,7 +196,7 @@ const home = () => {
             scrollEnabled={true}
             nestedScrollEnabled={true}
           />
-        </View> 
+        </View>
 
         <View className="px-4 py-4">
           <View className="flex-row items-center justify-between mb-3">
@@ -244,7 +237,7 @@ const home = () => {
 
                 <View className="flex-row items-center justify-between mt-2">
                   <Text className="text-lg font-bold text-emerald-600">
-                    ${item.price}
+                    ₹{item.price}
                   </Text>
                   <TouchableOpacity className="bg-emerald-600 px-3 py-1 rounded-lg"
                     onPress={() => {

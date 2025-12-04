@@ -11,7 +11,13 @@ const _layout = () => {
       <Tabs.Screen name="cart" options={{title:'Cart',tabBarIcon:({color,size})=><Ionicons name="cart" color={color} size={size}/>}}/>
       <Tabs.Screen name="orders"options={{title:'Orders',tabBarIcon:({color,size})=><Ionicons name="receipt" color={color} size={size}/>}} />
       <Tabs.Screen name="profile" options={{title:'Profile',tabBarIcon:({color,size})=><Ionicons name="person" color={color} size={size}/>}} />
-
+      <Tabs.Screen 
+        name="category/[name]" 
+        options={{ 
+          href: null, 
+          headerShown: false 
+        }} 
+      />
     </Tabs>
   )
 }
